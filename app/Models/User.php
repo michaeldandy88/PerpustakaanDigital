@@ -45,4 +45,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function role() { return $this->belongsTo(\App\Models\Role::class); }
+    public function isMahasiswa() { return $this->role && $this->role->name === 'mahasiswa'; }
+    public function isDosen() { return $this->role && $this->role->name === 'dosen'; }
+    public function isPustakawan() { return $this->role && $this->role->name === 'pustakawan'; }
+
 }
