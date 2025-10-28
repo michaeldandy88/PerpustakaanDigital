@@ -1,18 +1,25 @@
 export type Role = 'mahasiswa'|'dosen'|'pustakawan'|null;
 
+export interface AuthUser {
+  id : number
+  name : string
+  role : Role
+  token : string
+}
+
 const KEY = 'app_auth_user';
 
-export function saveUser(user: { id:number, name:string, role: Role }) {
-  localStorage.setItem(KEY, JSON.stringify(user));
+export function saveUser(user: AuthUser) {
+  localStorage.setItem(KEY, JSON.stringify(user))
 }
 
 export function clearUser() {
   localStorage.removeItem(KEY);
 }
 
-export function getUser(): { id:number, name:string, role: Role } | null {
-  const s = localStorage.getItem(KEY);
-  return s ? JSON.parse(s) : null;
+export function getUser(): AuthUser | null {
+  const s = localStorage.getItem(KEY)
+  return s ? JSON.parse(s) : null
 }
 
 export function getUserRole(): Role {
@@ -20,19 +27,30 @@ export function getUserRole(): Role {
   return u ? u.role : null;
 }
 
+export function getToken(): string | null {
+  const u = getUser()
+  return u ? u.token : null
+}
+
 export function isAuthenticated(): boolean {
   return !!getUser();
 }
 
-// Fake login for quick dev — replace with real API call
-export async function loginMock(email:string, password:string) {
-  // simple mapping by email
-  let role: Role = 'mahasiswa';
-  if (email.includes('dosen')) role = 'dosen';
-  if (email.includes('pustakawan')) role = 'pustakawan';
-  const user = { id: Date.now(), name: email.split('@')[0], role };
-  saveUser(user);
-  return user;
+export async function login(email: string, password: string) {
+  const res = await fetch('/api/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  })
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.message || 'Login gagal')
+  }
+
+  const user = await res.json()
+  saveUser(user)
+  return user
 }
 
 export async function logout() {

@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\LoanController;
 use App\Http\Controllers\Api\AssignmentController;
 use App\Http\Controllers\Api\SubmissionController;
 use App\Http\Controllers\AuthController;
+Route::get('/ping', fn() => 'pong');
 
 Route::post('/login', [AuthController::class,'login']);
 Route::middleware('auth:sanctum')->group(function() {

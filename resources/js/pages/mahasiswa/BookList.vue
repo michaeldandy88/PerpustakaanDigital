@@ -1,23 +1,50 @@
 <template>
-  <section>
-    <h1>Katalog Buku</h1>
+  <section class="min-h-screen bg-gray-50">
+    <!-- Header -->
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <h1 class="text-3xl font-bold text-gray-800">Katalog Buku</h1>
 
-    <div v-if="loading">Memuat buku...</div>
+      <!-- Loading -->
+      <div v-if="loading" class="mt-6 text-gray-600">Memuat buku...</div>
 
-    <div v-else>
-      <input v-model="q" @input="search" placeholder="Cari judul atau ISBN..." class="search" />
+      <!-- Content -->
+      <div v-else class="mt-6">
+        <!-- Search -->
+        <input
+          v-model="q"
+          @input="search"
+          placeholder="Cari judul atau ISBN..."
+          class="w-full max-w-xl rounded-lg border border-gray-300 bg-white px-4 py-2
+                 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        />
 
-      <ul class="book-list">
-        <li v-for="book in filtered" :key="book.id" class="book-item">
-          <div class="title">{{ book.title }}</div>
-          <div class="meta">
-            <small>{{ book.year || '-' }} • {{ book.isbn || '-' }}</small>
-          </div>
-          <p class="desc" v-if="book.description">{{ book.description }}</p>
-        </li>
-      </ul>
+        <!-- List -->
+        <ul class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <li
+            v-for="book in filtered"
+            :key="book.id"
+            class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition"
+          >
+            <div class="font-semibold text-gray-900">{{ book.title }}</div>
+            <div class="mt-1 text-sm text-gray-500">
+              <span>{{ book.year || '-' }}</span>
+              <span class="mx-1">•</span>
+              <span>{{ book.isbn || '-' }}</span>
+            </div>
+            <p v-if="book.description" class="mt-3 text-sm leading-relaxed text-gray-700">
+              {{ book.description }}
+            </p>
+          </li>
+        </ul>
 
-      <div v-if="!filtered.length">Tidak ada buku ditemukan.</div>
+        <!-- Empty state -->
+        <div
+          v-if="!filtered.length"
+          class="mt-6 rounded-lg border border-dashed border-gray-300 bg-white p-6 text-center text-gray-600"
+        >
+          Tidak ada buku ditemukan.
+        </div>
+      </div>
     </div>
   </section>
 </template>
@@ -34,7 +61,6 @@ async function load() {
   loading.value = true
   try {
     const res = await fetchBooks()
-    // API bisa mengembalikan { data: [...] } atau [...]
     books.value = res.data ?? res
   } finally {
     loading.value = false
@@ -42,7 +68,7 @@ async function load() {
 }
 
 function search() {
-  // cuma trigger reactive computed
+  // hanya memicu computed
 }
 
 const filtered = computed(() => {
@@ -56,12 +82,3 @@ const filtered = computed(() => {
 
 onMounted(load)
 </script>
-
-<style scoped>
-.search { padding: 0.5rem; width: 100%; max-width: 420px; margin: 0.5rem 0 1rem; }
-.book-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.8rem; }
-.book-item { padding: 0.8rem; border: 1px solid #e6e6e6; border-radius: 6px; background: #fff; }
-.title { font-weight: 600; }
-.meta { color: #666; margin-top: 0.25rem; }
-.desc { margin-top: 0.5rem; color: #444; }
-</style>
