@@ -25,7 +25,7 @@ const routes: Array<RouteRecordRaw> = [
   { path: '/', name: 'books', component: BookList },
   { path: '/books/:id', name: 'book.detail', component: BookDetail, props: true },
 
-  // mahasiswa routes (meta.requiresRole = 'mahasiswa' means only mahasiswa)
+  // mahasiswa routes
   { path: '/my/loans', name: 'my.loans', component: MyLoans, meta: { requiresAuth: true, requiresRole: ['mahasiswa'] } },
   { path: '/my/assignments', name: 'my.assignments', component: AssignmentList, meta: { requiresAuth: true, requiresRole: ['mahasiswa'] } },
 
