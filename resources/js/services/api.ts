@@ -15,6 +15,63 @@ api.interceptors.request.use(config => {
   return config
 })
 
+export async function getLibrarianStats() {
+  const res = await api.get('/api/stats/pustakawan')
+  return res.data
+}
+
+export async function listBooks(params?:any) {
+  const res = await api.get('/api/books', {params})
+  return res.data
+}
+
+export async function createBookApi(payload:{title: string; isbn?: string; year?: number; description?: string}) {
+  const res = await api.post('/api/books', payload)
+  return res.data  
+}
+
+export async function updateBookApi(id:number|string,payload: {title:string; isbn?:string; year?:number; description?:string}) {
+  const res = await api.put(`/api/books/${id}`, payload)
+  return res.data
+}
+
+export async function deleteBookApi(id:number|string) {
+  const res = await api.delete(`/api/books/${id}`)
+  return res.data
+}
+
+export async function listCopies(params?:any) {
+  const res = await api.get('/api/copies',{params})
+  return res.data
+}
+
+export async function createCopyApi(payload: {
+  book_id: number
+  barcode: string
+  status: 'tersedia' | 'dipinjam'
+  copy_type?: string
+  location?: string
+}) {
+  const res = await api.post('/api/copies',payload)
+  return res.data
+}
+
+export async function updateCopyApi(id: number | string, payload: {
+  book_id?: number
+  barcode?: string
+  status?: 'tersedia' | 'dipinjam'
+  copy_type?: string
+  location?: string
+}) {
+  const res = await api.put(`/api/copies/${id}`,payload)
+  return res.data
+}
+
+export async function deleteCopyApi(id: number | string) {
+  const res = await api.delete(`/api/copies/${id}`)
+  return res.data
+}
+
 export async function createAssignment(title: string, description: string) {
   const res = await api.post('/api/assignments', {
     title,

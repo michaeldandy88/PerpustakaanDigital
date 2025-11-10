@@ -4,11 +4,20 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Api\BookController;
 use App\Http\Controllers\Api\LoanController;
 use App\Http\Controllers\Api\AssignmentController;
+use App\Http\Controllers\Api\CopyController;
+use App\Http\Controllers\Api\StatsController;
 use App\Http\Controllers\Api\SubmissionController;
 use App\Http\Controllers\AuthController;
 
 Route::post('/login', [AuthController::class,'login']);
 Route::middleware('auth:sanctum')->group(function() {
+
+    Route::middleware('role:pustakawan')->group(function(){
+        Route::get('stats/pustakawan', [StatsController::class,'index']);
+        Route::apiResource('books', BookController::class);
+        Route::apiResource('copies', CopyController::class);
+    });
+
     Route::apiResource('books', BookController::class)->only(['index','show','store','update','destroy']);
     Route::post('copies/{copy}/borrow', [LoanController::class,'borrow']);
     Route::post('loans/{loan}/return', [LoanController::class,'return']);

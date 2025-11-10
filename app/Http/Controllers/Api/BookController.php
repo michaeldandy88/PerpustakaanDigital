@@ -24,10 +24,6 @@ class BookController extends Controller
 
     public function store(Request $req)
     {
-        if (!$req->user()->isPustakawan()) {
-            return response()->json(['message' => 'Forbidden'], 403);
-        }
-
         $data = $req->validate([
             'title' => 'required|string',
             'slug' => 'nullable|unique:books,slug',
@@ -44,10 +40,6 @@ class BookController extends Controller
 
     public function update(Request $req, Book $book)
     {
-        if (!$req->user()->isPustakawan()) {
-            return response()->json(['message' => 'Forbidden'], 403);
-        }
-
         $data = $req->validate([
             'title' => 'required|string',
             'isbn' => 'nullable|string',
@@ -61,10 +53,6 @@ class BookController extends Controller
 
     public function destroy(Request $req, Book $book)
     {
-        if (!$req->user()->isPustakawan()) {
-            return response()->json(['message' => 'Forbidden'], 403);
-        }
-
         $book->delete();
         return response()->json(null, 204);
     }
