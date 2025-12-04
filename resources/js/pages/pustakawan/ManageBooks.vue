@@ -5,10 +5,16 @@
       <p class="text-gray-600 mt-1">Manajemen daftar buku di perpustakaan.</p>
 
       <!-- Alerts -->
-      <div v-if="error" class="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-red-700">
+      <div
+        v-if="error"
+        class="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-red-700"
+      >
         {{ error }}
       </div>
-      <div v-if="notice" class="mt-4 rounded-lg border border-green-200 bg-green-50 p-3 text-green-700">
+      <div
+        v-if="notice"
+        class="mt-4 rounded-lg border border-green-200 bg-green-50 p-3 text-green-700"
+      >
         {{ notice }}
       </div>
 
@@ -40,15 +46,31 @@
                 Memuat data...
               </td>
             </tr>
-            <tr v-for="b in books" :key="b.id" class="border-t hover:bg-gray-50">
+
+            <tr
+              v-for="b in books"
+              :key="b.id"
+              class="border-t hover:bg-gray-50"
+            >
               <td class="px-4 py-3 font-medium">{{ b.title }}</td>
               <td class="px-4 py-3">{{ b.isbn || '-' }}</td>
               <td class="px-4 py-3">{{ b.year || '-' }}</td>
               <td class="px-4 py-3 flex gap-3">
-                <button class="text-blue-600 hover:underline" @click="openEditModal(b)">Edit</button>
-                <button class="text-red-600 hover:underline" @click="confirmDelete(b)">Hapus</button>
+                <button
+                  class="text-blue-600 hover:underline"
+                  @click="openEditModal(b)"
+                >
+                  Edit
+                </button>
+                <button
+                  class="text-red-600 hover:underline"
+                  @click="confirmDelete(b)"
+                >
+                  Hapus
+                </button>
               </td>
             </tr>
+
             <tr v-if="!loading && !books.length">
               <td colspan="4" class="px-4 py-6 text-center text-gray-500">
                 Belum ada buku.
@@ -59,7 +81,10 @@
       </div>
 
       <!-- Modal Tambah/Edit -->
-      <div v-if="showForm" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <div
+        v-if="showForm"
+        class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+      >
         <div class="bg-white w-full max-w-md rounded-xl p-6 shadow-lg">
           <h2 class="text-xl font-semibold text-gray-800 mb-4">
             {{ editing ? 'Edit Buku' : 'Tambah Buku' }}
@@ -101,6 +126,44 @@
               ></textarea>
             </label>
 
+            <!-- Upload Cover -->
+            <label class="block">
+              <span class="text-gray-600">Cover (gambar)</span>
+              <input
+                type="file"
+                accept="image/*"
+                class="mt-1 block w-full text-sm"
+                @change="onCoverChange"
+              />
+              <div v-if="coverPreview" class="mt-2">
+                <img
+                  :src="coverPreview"
+                  alt="Preview cover"
+                  class="w-24 h-auto rounded border"
+                />
+              </div>
+              <div v-else-if="editing && form.cover_url" class="mt-2 text-sm">
+                <span class="text-gray-600">Cover sudah ada.</span>
+              </div>
+            </label>
+
+            <!-- Upload PDF -->
+            <label class="block">
+              <span class="text-gray-600">File PDF</span>
+              <input
+                type="file"
+                accept="application/pdf"
+                class="mt-1 block w-full text-sm"
+                @change="onPdfChange"
+              />
+              <div v-if="pdfName" class="mt-2 text-sm text-gray-700">
+                Dipilih: {{ pdfName }}
+              </div>
+              <div v-else-if="editing && form.pdf_url" class="mt-2 text-sm">
+                <span class="text-gray-600">PDF sudah ada.</span>
+              </div>
+            </label>
+
             <div class="flex justify-end gap-3 pt-2">
               <button
                 type="button"
@@ -123,15 +186,29 @@
       </div>
 
       <!-- Dialog hapus sederhana -->
-      <div v-if="showDelete" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <div
+        v-if="showDelete"
+        class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+      >
         <div class="bg-white w-full max-w-md rounded-xl p-6 shadow-lg">
           <h2 class="text-lg font-semibold text-gray-800">Hapus Buku</h2>
           <p class="mt-2 text-gray-600">
-            Yakin ingin menghapus <span class="font-semibold">{{ pendingDelete?.title }}</span>?
+            Yakin ingin menghapus
+            <span class="font-semibold">{{ pendingDelete?.title }}</span>?
           </p>
           <div class="flex justify-end gap-3 mt-6">
-            <button class="px-4 py-2 rounded-lg border border-gray-300" @click="showDelete = false">Batal</button>
-            <button class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700" @click="doDelete">Hapus</button>
+            <button
+              class="px-4 py-2 rounded-lg border border-gray-300"
+              @click="showDelete = false"
+            >
+              Batal
+            </button>
+            <button
+              class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
+              @click="doDelete"
+            >
+              Hapus
+            </button>
           </div>
         </div>
       </div>
@@ -143,7 +220,15 @@
 import { ref, onMounted } from 'vue'
 import { listBooks, createBookApi, updateBookApi, deleteBookApi } from '@/services/api'
 
-type Book = { id:number; title:string; isbn?:string; year?:number; description?:string }
+type Book = {
+  id: number
+  title: string
+  isbn?: string
+  year?: number
+  description?: string
+  cover_url?: string | null
+  pdf_url?: string | null
+}
 
 const books = ref<Book[]>([])
 const loading = ref(true)
@@ -153,7 +238,20 @@ const notice = ref<string | null>(null)
 
 const showForm = ref(false)
 const editing = ref(false)
-const form = ref<Partial<Book>>({ id: undefined, title: '', isbn: '', year: undefined, description: '' })
+const form = ref<any>({
+  id: undefined,
+  title: '',
+  isbn: '',
+  year: undefined,
+  description: '',
+  cover_url: undefined,
+  pdf_url: undefined,
+})
+
+const coverFile = ref<File | null>(null)
+const pdfFile = ref<File | null>(null)
+const coverPreview = ref<string | null>(null)
+const pdfName = ref<string | null>(null)
 
 const showDelete = ref(false)
 const pendingDelete = ref<Book | null>(null)
@@ -163,7 +261,6 @@ async function load() {
   error.value = null
   try {
     const data = await listBooks()
-    // index() kamu mengembalikan array (bukan paginate), jadi langsung assign
     books.value = Array.isArray(data) ? data : (data.data ?? [])
   } catch (e: any) {
     error.value = e?.response?.data?.message || 'Gagal memuat buku'
@@ -174,13 +271,37 @@ async function load() {
 
 function openCreateModal() {
   editing.value = false
-  form.value = { title: '', isbn: '', year: undefined, description: '' }
+  form.value = {
+    id: undefined,
+    title: '',
+    isbn: '',
+    year: undefined,
+    description: '',
+    cover_url: undefined,
+    pdf_url: undefined,
+  }
+  coverFile.value = null
+  pdfFile.value = null
+  coverPreview.value = null
+  pdfName.value = null
   showForm.value = true
 }
 
 function openEditModal(b: Book) {
   editing.value = true
-  form.value = { id: b.id, title: b.title, isbn: b.isbn, year: b.year, description: b.description }
+  form.value = {
+    id: b.id,
+    title: b.title,
+    isbn: b.isbn ?? '',
+    year: b.year,
+    description: b.description ?? '',
+    cover_url: b.cover_url ?? null,
+    pdf_url: b.pdf_url ?? null,
+  }
+  coverFile.value = null
+  pdfFile.value = null
+  coverPreview.value = null
+  pdfName.value = null
   showForm.value = true
 }
 
@@ -188,35 +309,62 @@ function closeForm() {
   showForm.value = false
 }
 
+function onCoverChange(e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0] ?? null
+  coverFile.value = file
+  if (file) {
+    coverPreview.value = URL.createObjectURL(file)
+  } else {
+    coverPreview.value = null
+  }
+}
+
+function onPdfChange(e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0] ?? null
+  pdfFile.value = file
+  pdfName.value = file ? file.name : null
+}
+
 async function saveBook() {
   saving.value = true
   error.value = null
   notice.value = null
+
   try {
+    const fd = new FormData()
+    fd.append('title', form.value.title || '')
+    fd.append('isbn', form.value.isbn || '')
+    if (form.value.year != null) {
+      fd.append('year', String(form.value.year))
+    }
+    fd.append('description', form.value.description || '')
+
+    if (coverFile.value) {
+      fd.append('cover', coverFile.value)
+    }
+
+    if (pdfFile.value) {
+      fd.append('pdf', pdfFile.value)
+    }
+
     if (editing.value && form.value.id != null) {
-      const updated = await updateBookApi(form.value.id, {
-        title: form.value.title || '',
-        isbn: form.value.isbn || '',
-        year: form.value.year as number | undefined,
-        description: form.value.description || ''
-      })
-      // update di client
+      // _method=PUT agar Laravel terima multipart update
+      fd.append('_method', 'PUT')
+      const updated = await updateBookApi(form.value.id, fd)
       const idx = books.value.findIndex(b => b.id === updated.id)
       if (idx !== -1) books.value[idx] = updated
       notice.value = 'Buku diperbarui'
     } else {
-      const created = await createBookApi({
-        title: form.value.title || '',
-        isbn: form.value.isbn || '',
-        year: form.value.year as number | undefined,
-        description: form.value.description || ''
-      })
+      const created = await createBookApi(fd)
       books.value.unshift(created)
       notice.value = 'Buku ditambahkan'
     }
+
     showForm.value = false
   } catch (e: any) {
-    error.value = e?.response?.data?.message || 'Gagal menyimpan buku'
+    error.value = e?.response?.data?.message || e.message || 'Gagal menyimpan buku'
   } finally {
     saving.value = false
   }

@@ -25,13 +25,18 @@ export async function listBooks(params?:any) {
   return res.data
 }
 
-export async function createBookApi(payload:{title: string; isbn?: string; year?: number; description?: string}) {
-  const res = await api.post('/api/books', payload)
+export async function createBookApi(formData: FormData) {
+  const res = await api.post('/api/books', formData,{
+    headers: {'Content-Type': 'multipart/form-data'}
+  })
   return res.data  
 }
 
-export async function updateBookApi(id:number|string,payload: {title:string; isbn?:string; year?:number; description?:string}) {
-  const res = await api.put(`/api/books/${id}`, payload)
+export async function updateBookApi(id:number|string, formData: FormData) {
+  formData.append('_method', 'PUT')
+  const res = await api.post(`/api/books/${id}`, formData, {
+    headers : {'Content-Type': 'multipart/form-data'}
+  })
   return res.data
 }
 
