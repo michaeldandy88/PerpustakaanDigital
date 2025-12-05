@@ -15,11 +15,19 @@ class BookController extends Controller
 
     public function index()
     {
+        $books = Book::orderBy('title')->get()->map(function($b){
+            $b->cover_url = $b->cover_path ? Storage::url($b->cover_path) : null;
+            $b->pdf_url = $b->pdf_path ? Storage::url($b->pdf_path) : null;
+        });
+
         return response()->json(Book::orderBy('title')->get());
     }
 
     public function show(Book $book)
     {
+        $book->cover_url = $book->cover_path ? Storage::url($book->cover_path) : null;
+        $book->pdf_url = $book->pdf_path ? Storage::url($book->pdf_path) : null;
+
         return response()->json($book);
     }
 
@@ -46,6 +54,10 @@ class BookController extends Controller
         }
 
         $book = Book::create($data);
+
+        $book->cover_url = $book->cover_path ? Storage::url($book->cover_path) : null;
+        $book->pdf_url = $book->pdf_path ? Storage::url($book->pdf_path) : null;
+
         return response()->json($book, 201);
     }
 
@@ -75,11 +87,22 @@ class BookController extends Controller
         }
 
         $book->update($data);
+
+        $book->cover_url = $book->cover_path ? Storage::url($book->cover_path) : null;
+        $book->pdf_url = $book->pdf_path ? Storage::url($book->pdf_path) : null;
+
         return response()->json($book);
     }
 
     public function destroy(Request $req, Book $book)
     {
+        if ($book->cover_path && Storage::disk('public')->exists($book->cover_path)) {
+            Storage::disk('public')->delete($book->cover_path);
+        }
+        if ($book->cover_path && Storage::disk('public')->exists($book->cover_path)) {
+            Storage::disk('public')->delete($book->pdf_path);
+        }
+        
         $book->delete();
         return response()->json(null, 204);
     }
