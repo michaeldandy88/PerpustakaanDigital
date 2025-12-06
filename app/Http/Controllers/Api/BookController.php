@@ -16,11 +16,13 @@ class BookController extends Controller
     public function index()
     {
         $books = Book::orderBy('title')->get()->map(function($b){
+            // tambahkan properti yang dipakai frontend
             $b->cover_url = $b->cover_path ? Storage::url($b->cover_path) : null;
             $b->pdf_url = $b->pdf_path ? Storage::url($b->pdf_path) : null;
+            return $b; // <-- PENTING: kembalikan object
         });
 
-        return response()->json(Book::orderBy('title')->get());
+        return response()->json($books);
     }
 
     public function show(Book $book)
@@ -46,11 +48,11 @@ class BookController extends Controller
         $data['slug'] = $data['slug'] ?? Str::slug($data['title']) . '-' . Str::random(4);
 
         if ($req->hasFile('cover')) {
-            $data['cover_path'] = $req -> file('cover')->store('books/covers', 'public');
+            $data['cover_path'] = $req->file('cover')->store('books/covers', 'public');
         }
 
         if ($req->hasFile('pdf')) {
-            $data['pdf_path'] = $req ->file('pdf')->store('books/pdfs', 'public');
+            $data['pdf_path'] = $req->file('pdf')->store('books/pdfs', 'public');
         }
 
         $book = Book::create($data);
@@ -72,18 +74,20 @@ class BookController extends Controller
             'pdf' => 'nullable|mimes:pdf|max:2048',
         ]);
 
+        // Cover update: hapus cover lama jika ada, lalu simpan path baru
         if ($req->hasFile('cover')) {
-            if ($book->cover_path && Storage::disk('public')->exists($book->cover_path)){
+            if ($book->cover_path && Storage::disk('public')->exists($book->cover_path)) {
                 Storage::disk('public')->delete($book->cover_path);
             }
             $data['cover_path'] = $req->file('cover')->store('books/covers', 'public');
         }
 
+        // PDF update: hapus file pdf lama jika ada, lalu simpan path baru
         if ($req->hasFile('pdf')) {
-            if ($book->cover_path && Storage::disk('public')->exists($book->pdf)){
-                Storage::disk('public')->delete($book->pdf);
+            if ($book->pdf_path && Storage::disk('public')->exists($book->pdf_path)) {
+                Storage::disk('public')->delete($book->pdf_path);
             }
-            $data['cover_path'] = $req->file('pdf')->store('books/pdfs', 'public');
+            $data['pdf_path'] = $req->file('pdf')->store('books/pdfs', 'public');
         }
 
         $book->update($data);
@@ -99,10 +103,10 @@ class BookController extends Controller
         if ($book->cover_path && Storage::disk('public')->exists($book->cover_path)) {
             Storage::disk('public')->delete($book->cover_path);
         }
-        if ($book->cover_path && Storage::disk('public')->exists($book->cover_path)) {
+        if ($book->pdf_path && Storage::disk('public')->exists($book->pdf_path)) {
             Storage::disk('public')->delete($book->pdf_path);
         }
-        
+
         $book->delete();
         return response()->json(null, 204);
     }

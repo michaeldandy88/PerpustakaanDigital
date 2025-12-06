@@ -21,11 +21,11 @@
         <!-- List -->
         <ul class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <li
-            v-for="book in filtered"
-            :key="book.id"
+            v-for="(book, idx) in filtered"
+            :key="book?.id ?? idx"
+            v-if="books"
             class="rounded-xl border border-gray-200 bg-white p-0 shadow-sm hover:shadow-md transition"
           >
-            <!-- clickable card -->
             <router-link
               :to="{ name: 'book.detail', params: { id: book.id } }"
               class="block p-4 h-full"
@@ -33,7 +33,6 @@
               <div class="flex flex-col h-full">
                 <!-- cover -->
                 <div class="w-full h-44 bg-gray-100 rounded-md overflow-hidden flex items-center justify-center">
-                  <!-- render img only when URL defined -->
                   <img
                     v-if="getCover(book)"
                     :src="getCover(book)"
@@ -67,7 +66,6 @@
                     Buka PDF
                   </button>
 
-                  <span class="text-xs text-gray-400">Klik kartu untuk detail</span>
                 </div>
               </div>
             </router-link>
@@ -108,33 +106,84 @@ const q = ref('')
 
 const BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000'
 
+/**
+ * Robust load:
+ * - handles responses shaped as array or { data: [...] }
+ * - filters out falsy elements (null/undefined)
+ * - logs useful info for debugging
+ */
 async function load() {
+  console.log('[BookList] load() start')
   loading.value = true
   try {
     const res = await fetchBooks()
-    books.value = res.data ?? res
+    console.log('[BookList] fetchBooks raw response:', res)
+
+    // helper: cari array pertama dalam objek (depth-first, max depth 3)
+    function findArray(obj: any, depth = 0): any[] | null {
+      if (!obj || depth > 3) return null
+      if (Array.isArray(obj)) return obj
+      if (typeof obj !== 'object') return null
+
+      // common keys to try first
+      const keysPrefer = ['data', 'items', 'results']
+      for (const k of keysPrefer) {
+        if (k in obj) {
+          const found = findArray(obj[k], depth + 1)
+          if (found) return found
+        }
+      }
+
+      // fallback: iterate all keys
+      for (const k in obj) {
+        if (!Object.prototype.hasOwnProperty.call(obj, k)) continue
+        const found = findArray(obj[k], depth + 1)
+        if (found) return found
+      }
+      return null
+    }
+
+    // Normalize: if res is array -> use it; otherwise try to find nested array
+    let items: any[] | null = null
+    if (Array.isArray(res)) {
+      items = res
+    } else if (res && typeof res === 'object') {
+      // axios wrapper sometimes returns { data: <payload> }
+      const maybe = (res as any).data ?? res
+      items = findArray(maybe)
+    }
+
+    if (!items) {
+      console.warn('[BookList] unexpected books payload, expected array but got:', res)
+      books.value = []
+    } else {
+      books.value = items.filter((it: any) => !!it && typeof it === 'object')
+    }
+
+    console.log('[BookList] normalized books count:', books.value.length)
+  } catch (err) {
+    console.error('[BookList] fetchBooks error:', err)
+    books.value = []
   } finally {
     loading.value = false
+    console.log('[BookList] load() done, loading=', loading.value, 'books.length=', books.value.length)
   }
 }
 
 function search() {
-  // cuma trigger computed
+  // hanya trigger computed
 }
 
 const filtered = computed(() => {
-  if (!q.value) return books.value
+  const list = books.value ?? []
+  if (!q.value) return list
   const term = q.value.toLowerCase()
-  return books.value.filter(b =>
-    (b.title || '').toLowerCase().includes(term) ||
-    (b.isbn || '').toLowerCase().includes(term)
+  return list.filter(b =>
+    ((b.title || '') as string).toLowerCase().includes(term) ||
+    ((b.isbn || '') as string).toLowerCase().includes(term)
   )
 })
 
-/**
- * return full cover URL or undefined
- * (TypeScript-friendly: returns string | undefined, never null)
- */
 function getCover(book: Book): string | undefined {
   if (!book) return undefined
   if (book.cover_url) return book.cover_url
@@ -153,14 +202,12 @@ function getPdfUrl(book: Book): string | undefined {
   return undefined
 }
 
-/* buka pdf di tab baru (stop propagation supaya router-link tidak ter-trigger) */
 function openPdf(book: Book) {
   const url = getPdfUrl(book)
   if (!url) return
   window.open(url, '_blank')
 }
 
-/* fallback ketika gambar gagal dimuat (opsional) */
 function onImgError(e: Event) {
   const img = e.target as HTMLImageElement
   img.style.display = 'none'

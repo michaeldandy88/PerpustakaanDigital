@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Api\BookController;
@@ -9,17 +10,28 @@ use App\Http\Controllers\Api\StatsController;
 use App\Http\Controllers\Api\SubmissionController;
 use App\Http\Controllers\AuthController;
 
-Route::post('/login', [AuthController::class,'login']);
+/*
+|------------------------------------------------------------
+| API Routes
+|------------------------------------------------------------
+|
+| Note: pastikan nama parameter route sesuai (singular) agar
+| route-model-binding Laravel bekerja dengan baik.
+|
+*/
 
+Route::post('/login', [AuthController::class, 'login']);
+
+// Public book routes
 Route::get('books', [BookController::class, 'index']);
-Route::get('books', [BookController::class, 'show']);
+Route::get('books/{book}', [BookController::class, 'show']);
 
-Route::middleware('auth:sanctum')->group(function() {
+Route::middleware('auth:sanctum')->group(function () {
 
-    Route::middleware('role:pustakawan')->group(function(){
+    Route::middleware('role:pustakawan')->group(function () {
         Route::post('books', [BookController::class, 'store']);
-        Route::post('books/{book}', [BookController::class, 'update']);
-        Route::delete('books/{}book', [BookController::class, 'delete']);
+        Route::put('books/{book}', [BookController::class, 'update']);     // PUT untuk update
+        Route::delete('books/{book}', [BookController::class, 'destroy']); // destroy, path fixed
 
         Route::get('stats/pustakawan', [StatsController::class, 'index']);
         Route::apiResource('copies', CopyController::class);
@@ -29,9 +41,10 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::post('loans/{loan}/return', [LoanController::class, 'return']);
 
     Route::apiResource('assignments', AssignmentController::class);
-    Route::post('assignments/{assignments}/submit', [SubmissionController::class,'store']);
-    Route::post('submissions/{submission}/grade', [SubmissionController::class,'grade']);
+    Route::post('assignments/{assignment}/submit', [SubmissionController::class, 'store']);
+    Route::post('submissions/{submission}/grade', [SubmissionController::class, 'grade']);
 
-    Route::get('/user', function(Request $req){
-        return $req->user()->load('role'); });
+    Route::get('/user', function (Request $req) {
+        return $req->user()->load('role');
+    });
 });
