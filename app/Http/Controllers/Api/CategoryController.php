@@ -10,13 +10,13 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        return Category::all();
+        return Category::latest()->get();
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string',
+            'name' => 'required|string|unique:categories,name',
         ]);
 
         return Category::create($validated);
@@ -25,16 +25,18 @@ class CategoryController extends Controller
     public function update(Request $request, Category $category)
     {
         $validated = $request->validate([
-            'name' => 'required|string',
+            'name' => 'required|string|unique:categories,name,' . $category->id,
         ]);
 
         $category->update($validated);
+
         return $category;
     }
 
     public function destroy(Category $category)
     {
         $category->delete();
-        return response()->json(['message' => 'Category deleted']);
+
+        return response()->json(['message' => 'Kategori dihapus']);
     }
 }

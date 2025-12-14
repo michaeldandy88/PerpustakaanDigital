@@ -1,6 +1,11 @@
 import axios from 'axios'
 
-axios.defaults.withCredentials = true
-axios.defaults.baseURL = '/api'
+const api = axios.create({
+  baseURL: '/api',
+  withCredentials: true,
+  headers: {
+    'X-Requested-With': 'XMLHttpRequest',
+  },
+})
 
-export default axios
+export default api

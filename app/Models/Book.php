@@ -14,7 +14,11 @@ class Book extends Model
         'author',
         'publisher',
         'year',
+        'description',
         'stock',
+        'category_id',
+        'pdf_path',
+        'cover_path',
     ];
 
     public function category()

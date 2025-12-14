@@ -1,12 +1,9 @@
 <script setup>
-import Sidebar from '../components/Sidebar.vue'
 import Navbar from '../components/NavBar.vue'
 </script>
 
 <template>
   <div class="min-h-screen flex bg-gray-100">
-    <!-- Sidebar -->
-    <Sidebar />
 
     <!-- Main content -->
     <div class="flex-1 flex flex-col">
