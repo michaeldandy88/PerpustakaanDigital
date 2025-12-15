@@ -13,19 +13,6 @@
       </router-link>
 
       <router-link
-        to="/books"
-        class="px-3 py-2 rounded-md hover:bg-white/15 transition"
-      >
-        Buku
-      </router-link>
-
-      
-    </nav>
-
-    <hr class="my-4 border-white/20" />
-
-    <nav class="flex flex-col gap-1">
-      <router-link
         to="/admin/books"
         class="px-3 py-2 rounded-md hover:bg-white/15 transition"
       >

@@ -1,7 +1,6 @@
 <script setup>
 import axios from 'axios'
 import { useRouter } from 'vue-router'
-import DashboardLayout from '../../layouts/DashboardLayout.vue'
 import DashboardLayoutMahasiswa from '../../layouts/DashboardLayoutMahasiswa.vue'
 const router = useRouter()
 
